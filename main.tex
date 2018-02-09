@@ -1,0 +1,59 @@
+\documentclass{MasterThesis}
+
+\usepackage{varwidth}
+\usepackage{amsmath, amsfonts}
+\usepackage[nottoc]{tocbibind}
+\usepackage{listings, xcolor}
+\usepackage{tabto}
+\usepackage{outlines}
+\usepackage{indentfirst}
+
+
+\setlength{\parindent}{0.5cm}
+
+\include{solidity}
+
+\graphicspath{ {Images/} }
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+\setcounter{tocdepth}{2}
+
+\title{An analysis of Ethereum ICOs}
+\author{ 
+Daniele Stefano Ferru\\
+\small{Dept. of Mathematics and Computer Science}\\
+\small{University of Cagliari}\\
+\small{Via Ospedale 72, 09124 Cagliari (Italy)}\\
+\small{Email: da.ferru2@studenti.unica.it}\\
+\and
+Massimo Bartoletti\\
+\small{Dept. of Mathematics and Computer Science}\\
+\small{University of Cagliari}\\
+\small{Via Ospedale 72, 09124 Cagliari (Italy)}\\
+\small{Email: bart@unica.it}
+}
+
+\begin{document}
+
+\frontmatter
+
+\maketitle
+
+\tableofcontents
+
+\mainmatter
+
+\include{Chapters/Chapter1}
+
+\include{Chapters/Chapter2}
+
+\include{Chapters/Chapter3}
+
+\include{Chapters/Chapter4}
+
+\include{Chapters/Chapter5}
+
+\include{Chapters/Chapter6}
+
+\end{document}

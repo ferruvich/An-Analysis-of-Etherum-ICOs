@@ -1,0 +1,145 @@
+\label{Chapter4}
+
+\chapter{Ethereum ICOs}
+\section{ERC20 Tokens}
+The \href{https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md}{ERC20} token standard describes the functions and events that an Ethereum token contract has to implement. \newline
+Following is an interface contract declaring the required functions and events to meet the ERC20 standard:
+\begin{lstlisting}[language=Solidity]
+contract ERC20Interface {
+    function totalSupply() public constant returns (uint);
+    function balanceOf(address tokenOwner) public constant returns (uint balance);
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
+    function transfer(address to, uint tokens) public returns (bool success);
+    function approve(address spender, uint tokens) public returns (bool success);
+    function transferFrom(address from, address to, uint tokens) public returns (bool success);
+
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed tokenOwner,address indexed spender, uint tokens);
+}
+\end{lstlisting}
+Some of the tokens include further information describing the token contract:
+\begin{lstlisting}[language=Solidity]
+    string public constant name = "Token Name";
+    string public constant symbol = "SYM";
+    uint8 public constant decimals = 18;
+\end{lstlisting}
+
+\subsection{How a Token Contract Works}
+Following is a fragment of a token contract to demonstrate how a token contract maintains the token balance of Ethereum accounts:
+\begin{lstlisting}[language=Solidity]
+contract TokenContractFragment {
+
+    // Balances for each account
+    mapping(address => uint256) balances;
+
+    // Owner of account approves the transfer of an amount to another account
+    mapping(address => mapping (address => uint256)) allowed;
+
+    // Get the token balance for account `tokenOwner`
+    function balanceOf(address tokenOwner) 
+    public constant returns (uint balance) {
+        return balances[tokenOwner];
+    }
+
+    // Transfer the balance from owner's account to another account
+    function transfer(address to, uint tokens) 
+    public returns (bool success) {
+    balances[msg.sender] = balances[msg.sender].sub(tokens);
+    balances[to] = balances[to].add(tokens);
+    Transfer(msg.sender, to, tokens);
+    return true;
+    }
+
+    // Send `tokens` amount of tokens from address `from` to address `to`
+    // The transferFrom method is used for a withdraw workflow, allowing contracts to send
+    // tokens on your behalf, for example to "deposit" to a contract address and/or to charge
+    // fees in sub-currencies; the command should fail unless the _from account has
+    // deliberately authorized the sender of the message via some mechanism; we propose
+    // these standardized APIs for approval:
+    function transferFrom(address from, address to, uint tokens) 
+    public returns (bool success) {
+        balances[from] = balances[from].sub(tokens);
+        allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
+        balances[to] = balances[to].add(tokens);
+        Transfer(from, to, tokens);
+        return true;
+    }
+
+    // Allow `spender` to withdraw from your account, multiple times, up to the `tokens` amount.
+    // If this function is called again it overwrites the current allowance with _value.
+    function approve(address spender, uint tokens) 
+    public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        Approval(msg.sender, spender, tokens);
+        return true;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Token Balance}
+For an example, assume that this token contract has two token holders: \newline
+\hspace*{4ex} \texttt{0x1111111111111111111111111111111111111111} with a balance of 100 units
+\newline
+\hspace*{4ex} \texttt{0x2222222222222222222222222222222222222222} with a balance of 200 units
+\newline
+The token contract's balances data structure will contain the following information:
+\newline
+\hspace*{4ex} \texttt{balances[0x11111...] = 100}
+\newline
+\hspace*{4ex} \texttt{balances0x22222...] = 200}
+\newline
+The \texttt{balanceOf(...)} function will return the following values:
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 100
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 200
+
+\subsubsection{Transfer token balance}
+If \texttt{0x11111...} wants to transfer 10 tokens to \texttt{0x22222...}, \texttt{0x11111...} will execute the function:
+\begin{lstlisting}[language=Solidity]
+    tokenContract.transfer(0x22222..., 10)
+\end{lstlisting}
+The token contract's \texttt{transfer(...)} function will alter the balances data structure to contain the following information:
+\newline
+\hspace*{4ex} \texttt{balances[0x11111...] = 90}
+\newline
+\hspace*{4ex} \texttt{balances[0x22222...] = 210}
+\newline
+The \texttt{balanceOf(...)} function will now return the following values:
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 90
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 210
+
+\subsubsection{Approve And TransferFrom Token Balance}
+If \texttt{0x11111...} wants to authorise \texttt{0x22222...} to transfer some tokens to \texttt{0x22222...}, \texttt{0x11111...} will execute the function:
+\begin{lstlisting}[language=Solidity]
+    tokenContract.approve(0x22222..., 30)
+\end{lstlisting}
+The approve data structure will now contain the following information:
+\newline
+\hspace*{4ex} \texttt{tokenContract.allowed[0x11111...][0x22222...] = 30}
+\newline
+If\texttt{0x22222...} wants to later transfer some tokens from \texttt{0x11111...} to itself, \texttt{0x22222...} executes the \texttt{transferFrom(...)} function:
+\begin{lstlisting}[language=Solidity]
+    tokenContract.transferFrom(0x11111..., 0x22222..., 20)
+\end{lstlisting}
+The balances data structure will be altered to contain the following information:
+\newline
+\hspace*{4ex} \texttt{balances[0x11111...] = 70}
+\newline
+\hspace*{4ex} \texttt{balances[0x22222...] = 230}
+\newline
+And the approve data structure will now contain the following information:
+\newline
+\hspace*{4ex} \texttt{tokenContract.allowed[0x11111...][0x22222...] = 10}
+\newline
+0x22222... can still spend 10 tokens from 0x11111....
+The \texttt{balanceOf(...)} function will now return the following values:
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 70
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 230
+
+
+\section{Related works}
