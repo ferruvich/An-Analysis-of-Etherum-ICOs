@@ -3,9 +3,23 @@
 \chapter{A tool for Ethereum analytics}
 \section{Architecture of the tool}
 \subsection{Parity}
-\href{https://www.parity.io/}{Parity}  is an Ethereum client, written from the ground-up for correctness-verifiability, modularisation, low-footprint and high-performance. \newline To this end it utilises the Rust language, a hybrid imperative/OO/functional language with an emphasis on efficiency.
-\subsection{Web3}
-\label{web3}
+\href{https://www.parity.io/}{Parity} \cite{authors2017ethereum} is an Ethereum client, written from the ground-up for correctness-verifiability, modularisation, low-footprint and high-performance. \newline
+To this end it utilises the Rust language, a hybrid imperative/OO/functional language with an emphasis on efficiency. 
+\newline
+Parity comes with an extensive, in-built Ethereum Wallet and DApp environment. It includes:
+\begin{itemize}
+    \item Account, address-book and multi-sig management.
+    \item Key creation, importing and exporting.
+    \item Web3 Ðapp browser.
+    \item Hardware and electronic cold-wallet support.
+    \item Name registry support.
+    \item Contract development, deployment and interaction environment.
+\end{itemize}
+\subsection{Web3J}
+\label{web3j}
+\href{https://web3j.io/}{Web3J} is a highly modular, reactive, type safe Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network. 
+\newline
+This allows to work with the Ethereum blockchain, without the additional overhead of having to write an integration code for the platform.
 \subsection{JSON-RPC}
 
 \section{Case study: a basic view of the blockchain}
@@ -102,5 +116,5 @@ $
 In this section we will explain in details the implementation of the tool, built to retrieve blockchain data and other external data and combine them. \newline
 This tool is written in Scala Programming Language and built with Scala Build Tool (SBT). \newline
 Scala has been chosen because, since it's compiled in bytecode that runs on Java Virtual Machine (JVM), it can be combined with Java external libraries without any problem. \newline
-Thanks to this property, it was possible to use \href{https://web3j.io/}{Web3J} library to retrieve blockchain data. It is a Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network. \newline
-Web3J is the Java version of a Web3 (a Javascript library), which has be explained in \ref{web3}. In the following paragraph, we explain the created classes.
+Thanks to this property, it was possible to use Web3J library to retrieve blockchain data. It is a Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network. \newline
+Web3J is the Java version of a Web3 (a Javascript library), which has be explained in \ref{web3j}. In the following paragraph, we explain the created classes.

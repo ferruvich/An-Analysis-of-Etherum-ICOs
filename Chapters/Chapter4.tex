@@ -1,8 +1,16 @@
 \label{Chapter4}
 
 \chapter{Ethereum ICOs}
+
+\section{Initial Coin Offering}
+An \textbf{initial coin offering} (ICO) is a controversial means of crowdfunding centered around cryptocurrency \cite{chohan2017initial,teutsch2017interactive} which can be a source of capital for startup companies. 
+
+In an ICO, a quantity of the crowdfunded cryptocurrency is preallocated to investors in the form of \textit{tokens}, in exchange for legal tender or other cryptocurrencies such as \textbf{Bitcoin} or \textbf{Ethereum}. These tokens supposedly become functional units of currency if or when the ICO's funding goal is met and the project launches.
+
+ICOs provide a means by which startups avoid costs of regulatory compliance and intermediaries, such as venture capitalists, bank and stock exchanges while increasing risk for investors. ICOs may fall outside existing regulations or may need to be regulated depending on the nature of the project, or are banned altogether in some jurisdictions, such as China and South Korea
+
 \section{ERC20 Tokens}
-The \href{https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md}{ERC20} token standard describes the functions and events that an Ethereum token contract has to implement. \newline
+The \href{https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md}{ERC20} token standard \cite{vogelsteller2015erc} describes the functions and events that an Ethereum token contract has to implement. \newline
 Following is an interface contract declaring the required functions and events to meet the ERC20 standard:
 \begin{lstlisting}[language=Solidity]
 contract ERC20Interface {
@@ -143,3 +151,4 @@ The \texttt{balanceOf(...)} function will now return the following values:
 
 
 \section{Related works}
+This work is based on previous works. We first developed a tool for Ethereum blockchain analytics, improving an existing tool \cite{bartoletti2017generalbit,bartoletti2017generalblock}.

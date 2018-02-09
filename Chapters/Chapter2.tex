@@ -58,6 +58,27 @@ This function, \texttt{APPLY(S,TX) -> S'} can be defined as follows:
     \item Otherwise, refund the fees for all remaining gas to the sender, and send the fees paid for gas consumed to the miner.
 \end{enumerate}
 
+\section{Ethereum Smart Contracts}
+A smart contract \cite{clack2016smart} is a computer protocol intended to digitally facilitate, verify, or enforce the negotiation or performance of a contract. Smart contracts allow the performance of credible transactions without third parties. These transactions are trackable and irreversible. Smart contracts were first proposed by Nick Szabo, who coined the term, in 1994.
+
+There are, basing on applications, four types of smart conntract:
+\begin{itemize}
+    \item \textit{Smart Legal Contract}: smart contract combined with legal contract templates;
+    \item \textit{Decentralized Autonomous Organizations (DAO)}: multiple smart contracts combined with governance mechanism;
+    \item \textit{Distributet Applications (DApps)}: Combination of smart contract codes;
+    \item \textit{Smart Contracting Devices}: combined with devices (IoT).
+\end{itemize}
+
+Proponents of smart contracts claim that many kinds of contractual clauses may be made partially or fully self-executing, self-enforcing, or both. The aim of smart contracts is to provide security that is superior to traditional contract law and to reduce other transaction costs associated with contracting. Various cryptocurrencies have implemented types of smart contracts. 
+
+A smart contract can be deployed using three different languages:
+\begin{itemize}
+    \item \textit{Solidity}: A Javascript-like Object Oriented language;
+    \item \textit{Serpent}: A Python-like Object Oriented language;
+    \item \textit{LLL (Low-level Lisp-like Language)}: A Lisp-like Functional language.
+\end{itemize}
+
+
 \section{Applications in Token Systems}
 On-blockchain token systems have many applications ranging from sub-currencies representing assets such as USD or gold to company stocks, individual tokens representing smart property, secure unforgeable coupons, and even token systems with no ties to conventional value at all, used as point systems for incentivization. \newline
 Token systems are surprisingly easy to implement in Ethereum. The key point to understand is that all a currency, or token system, fundamentally is a database with one operation: subtract \texttt{X} units from \texttt{A} and give \texttt{X} units to \texttt{B}, with the proviso that 

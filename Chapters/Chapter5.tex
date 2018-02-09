@@ -55,7 +55,7 @@ In order to extract useful data using this API, we have created a specific class
 \begin{center}
 \begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
     \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline 
-    \textbf{ICO Symbol} & ICORating's investment rating for the given ICO & \texttt{getSymbol(icoName)}\\ \hline 
+    \textbf{ICO Symbol} & ICO's symbol & \texttt{getSymbol(icoName)}\\ \hline 
     \textbf{Exchange Details} & Details about the Exchanges that trade this token & \texttt{getExchanges(icoName/icoSymbol)}\\ \hline 
     \textbf{Market Cap} & Actual Market Capitalization of the given ICO &
     \texttt{getMarketCap(icoName/icoSymbol)}\\ \hline
@@ -169,7 +169,14 @@ In order to extract useful data using this API, we have created a specific class
 \end{itemize}
 \subsubsection{Extracted API Methods}
 In order to extract useful data using this API, we have created a specific class, called \textbf{EthplorerAPI}, following are the methods in this class.
-
+\begin{center}
+\begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline
+    \textbf{ICO Name} & ICO's name & \texttt{getTokenName(contractAddress)}\\ \hline 
+    \textbf{ICO Symbol} & ICO's Symbol & \texttt{getTokenSymbol(contractAddress)}\\ \hline 
+    \textbf{Token Price} & Token current price (USD) & \texttt{getTokenPrice(contractAddress)}\\ \hline
+\end{tabular}
+\end{center}
 
 \section{Collection of ICOs data}
 In order to store blockchain data combined with the external data retrieved using functions described in section \ref{informationsources}, we chose to use SQL, for the sake of precision, we used PostgreSQL.
