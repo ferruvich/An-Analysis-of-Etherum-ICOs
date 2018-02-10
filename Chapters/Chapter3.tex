@@ -2,7 +2,29 @@
 
 \chapter{A tool for Ethereum analytics}
 \section{Architecture of the tool}
+In this section we will describe how this tool works. This tool is build for create a custom view of either the Ethereum blockchain or the Bitcoin blockchain. Since we do not use Bitcoin blockchain, we will describe only how the Ethereum part works. We said the the view is \textit{custom} because this tool allows the user to extract whatever he needs from the blockchain, such as:
+\begin{itemize}
+    \item Blocks information, e.g. block number, block hash;
+    \item Transactions information, e.g. transaction hash, sender, receiver, created contract (if exists);
+    \item Contract internal transactions information, e.g. transaction hash, sender, receiver, father transaction hash (the transaction that calls the defined contract)
+\end{itemize}
+
+The following image describes the tool's architecture:
+\begin{center}
+    \[
+        \includegraphics[
+            trim=1cm 3cm 1cm 1cm,
+            width=0.85\columnwidth,]{architecture.png}
+    \]
+\end{center}
+As you can see, in order to retrieve blockchain data, our tool makes a request through Web3J (described in \ref{web3j}), which in turn makes a request directly to the Ethereum client, in our case Parity (described in \ref{parity}). This requests are made using the JSON-RPC protocol (described in \ref{jsonrpc}). 
+
+When Parity returns the wanted result, Web3J serialize it into a collection of objects, then returns them to our tool. Since these classes do not contains all information, we decided to wrap them in another classes, retrieving all missing information, i.e. contract internal trasactions.
+
+In the next subsections, we briefly describe how Parity, Web3J and JSON RPC work. Then, in the next sections, we show some view examples, using \textit{MongoDB} as DBMS.
+
 \subsection{Parity}
+\label{parity}
 \href{https://www.parity.io/}{Parity} \cite{authors2017ethereum} is an Ethereum client, written from the ground-up for correctness-verifiability, modularisation, low-footprint and high-performance. \newline
 To this end it utilises the Rust language, a hybrid imperative/OO/functional language with an emphasis on efficiency. 
 \newline
@@ -15,13 +37,64 @@ Parity comes with an extensive, in-built Ethereum Wallet and DApp environment. I
     \item Name registry support.
     \item Contract development, deployment and interaction environment.
 \end{itemize}
+
 \subsection{Web3J}
 \label{web3j}
-\href{https://web3j.io/}{Web3J} is a highly modular, reactive, type safe Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network. 
-\newline
-This allows to work with the Ethereum blockchain, without the additional overhead of having to write an integration code for the platform.
-\subsection{JSON-RPC}
+\href{https://web3j.io/}{Web3J} is a highly modular, reactive, type safe Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network. This allows to work with the Ethereum blockchain, without the additional overhead of having to write an integration code for the platform.
 
+Web3J is capable to connect to a local blockchain, downloaded using Parity, \href{https://github.com/ethereum/go-ethereum/wiki/geth}{Geth} or another Ethereum client, or a remote one, like \href{https://infura.io}{Infura}.
+In order to retrieve blockchain data, Web3J uses a protocol called JSON-RPC, which will be described in section \ref{jsonrpc}. 
+
+\subsection{JSON-RPC}
+\label{jsonrpc}
+JSON-RPC \cite{json2012json} is a remote procedure call protocol encoded in JSON. It is a very simple protocol (and very similar to XML-RPC), defining only a few data types and commands. JSON-RPC allows for notifications (data sent to the server that does not require a response) and for multiple calls to be sent to the server which may be answered out of order.
+
+JSON-RPC works by sending a request to a server implementing this protocol. The client in that case is typically software intending to call a single method of a remote system. Multiple input parameters can be passed to the remote method as an array or object, whereas the method itself can return multiple output data as well. (This depends on the implemented version).
+
+All transfer types are single objects, serialized using JSON. A request is a call to a specific method provided by a remote system. It must contain three certain properties:
+\begin{itemize}
+    \item \textit{Method}: A String with the name of the method to be invoked;
+    \item \textit{Params}: An Object or Array of values to be passed as parameters to the defined method;
+    \item \textit{Id}: A value of any type used to match the response with the request that it is replying to.
+\end{itemize}
+
+The receiver of the request must reply with a valid response to all received requests. A response must contain the following properties:
+\begin{itemize}
+    \item \textit{Result}: The data returned by the invoked method. If an error occurred while invoking the method, this value must be null;
+    \item \textit{Error}: A specified error code if there was an error invoking the method, otherwise null;
+    \item \textit{Id}: The id of the request it is responding to.
+\end{itemize}
+Since there are situations where no response is needed or even desired, notifications were introduced. A notification is similar to a request except for the id, which is not needed because no response will be returned. In this case the id property should be omitted (Version 2.0) or be null (Version 1.0).
+\subsubsection{Examples}
+In this subsection, we will show one example of \textit{Request and Response} and one of \textit{Notification} using JSON-RPC version 2.0.
+\newline
+Request and response:
+\begin{lstlisting}[language=json]
+Request
+{
+    "jsonrpc": "2.0", 
+    "method": "subtract", 
+    "params": {
+                "minuend": 42, 
+                "subtrahend": 23
+              },
+    "id": 3
+}
+Response 
+{
+    "jsonrpc": "2.0", 
+    "result": 19, 
+    "id": 3
+}
+\end{lstlisting}
+Notification, with no response
+\begin{lstlisting}[language=json]
+{
+    "jsonrpc": "2.0",
+    "method": "update",
+    "params": [1,2,3,4,5]
+}
+\end{lstlisting}
 \section{Case study: a basic view of the blockchain}
 This view contains data about all transactions (and, contract internal transactions) that has been done inside Ethereum blockchain. The fields in this view are the following:
 \begin{itemize}
