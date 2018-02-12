@@ -1,7 +1,7 @@
 \label{Chapter3}
 
 \chapter{A tool for Ethereum analytics}
-\section{Architecture of the tool}
+\section{Tool architecture}
 In this section we will describe how this tool works. This tool is build for create a custom view of either the Ethereum blockchain or the Bitcoin blockchain. Since we do not use Bitcoin blockchain, we will describe only how the Ethereum part works. We said the the view is \textit{custom} because this tool allows the user to extract whatever he needs from the blockchain, such as:
 \begin{itemize}
     \item Blocks information, e.g. block number, block hash;
@@ -186,8 +186,17 @@ $
 
 
 \section{Implementation}
-In this section we will explain in details the implementation of the tool, built to retrieve blockchain data and other external data and combine them. \newline
-This tool is written in Scala Programming Language and built with Scala Build Tool (SBT). \newline
-Scala has been chosen because, since it's compiled in bytecode that runs on Java Virtual Machine (JVM), it can be combined with Java external libraries without any problem. \newline
-Thanks to this property, it was possible to use Web3J library to retrieve blockchain data. It is a Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network. \newline
-Web3J is the Java version of a Web3 (a Javascript library), which has be explained in \ref{web3j}. In the following paragraph, we explain the created classes.
+In this section we will explain in details the implementation of the tool, built to retrieve blockchain data and other external data and combine them.
+
+This tool is written in Scala Programming Language and built with Scala Build Tool (SBT). Scala has been chosen because, since it's compiled in bytecode that runs on Java Virtual Machine (JVM), it can be combined with Java external libraries without any problem. \newline
+Thanks to this property, it was possible to use Web3J (explained in \ref{web3j}) library to retrieve blockchain data. It is a Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network.
+
+The core class, used to access both \textit{Ethereum} and \textit{Bitcoin} blockchain is \texttt{BlockchainLib}. It has two methods:
+\begin{itemize}
+    \item \texttt{getBitcoinBlockchain(settings: BitcoinSettings)}
+    \item \texttt{getEthereumBlockchain(url: String)}
+\end{itemize}
+Since for this thesis we used only \texttt{getEthereumBlockchain}, we will describe only this class. 
+\newline
+The \texttt{getEthereumBlockchain} method takes one parameter that is the url where the blockchain is stored.
+For example, if you are using Parity locally, the url should be like \texttt{http://localhost:8545}, since the \texttt{8545} port is the default port where Parity listens to JSON-RPC requests.
