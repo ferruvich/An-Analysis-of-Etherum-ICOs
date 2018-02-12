@@ -2,14 +2,18 @@
 
 \chapter{A tool for Ethereum analytics}
 \section{Tool architecture}
-In this section we will describe how this tool works. This tool is build for create a custom view of either the Ethereum blockchain or the Bitcoin blockchain. Since we do not use Bitcoin blockchain, we will describe only how the Ethereum part works. We said the the view is \textit{custom} because this tool allows the user to extract whatever he needs from the blockchain, such as:
+In this section we will describe how this tool works. This tool is build for create a custom view of either the Ethereum blockchain or the Bitcoin blockchain.
+\newline 
+Since we do not use Bitcoin blockchain, we will describe only how the Ethereum part works. We said the the view is \textit{custom} because this tool allows the user to extract whatever he needs from the blockchain, such as:
 \begin{itemize}
     \item Blocks information, e.g. block number, block hash;
     \item Transactions information, e.g. transaction hash, sender, receiver, created contract (if exists);
     \item Contract internal transactions information, e.g. transaction hash, sender, receiver, father transaction hash (the transaction that calls the defined contract)
 \end{itemize}
 
-The following image describes the tool's architecture:
+Furthermore, the view \textit{customization} is possible because our tool is able to retrieve \textbf{external data} (for external we mean data not stored directly inside blockchain) and combine it with blockchain's internal data. This external data could be of any nature, e.g. exchange rates, ICOs data, \textit{etc...}.
+
+The image in the next page shows how out tool works. %Cambiare immagine, aggiungere anche i dati esterni
 \begin{center}
     \[
         \includegraphics[
@@ -149,6 +153,7 @@ db.myBlockchain.find({
 \end{varwidth}
 \end{center}
 \section{Case study: Exchange rates}
+\label{exchangerates}
 This view contains data about all transactions, combined with the Ethereum conversion price in USD in that specific day. 
 The fields in this view are the following:
 \begin{itemize}
@@ -200,3 +205,87 @@ Since for this thesis we used only \texttt{getEthereumBlockchain}, we will descr
 \newline
 The \texttt{getEthereumBlockchain} method takes one parameter that is the url where the blockchain is stored.
 For example, if you are using Parity locally, the url should be like \texttt{http://localhost:8545}, since the \texttt{8545} port is the default port where Parity listens to JSON-RPC requests.
+
+This method returns an istance of \texttt{EthereumBlockchain} which extends a \texttt{Traversable}, so it can be looped with a simple \texttt{foreach}, setting first the following parameters:
+\begin{itemize}
+    \item \textit{startBlock}: the block from which to start. It is modifiable with the \texttt{setStart} method. If not setted, the default is 0;
+    \item \textit{endBlock}: the block from which to end. It is modifiable with the \texttt{setEnd} method. If not setted, the default is the last block;
+    \item \textit{step}: the interval between each block visited. It is modifiable with the \texttt{setStep} method. If not setted, the default is 1.
+\end{itemize}
+
+This \texttt{foreach} loops over all requested block. Each block is an instance of the \texttt{EthereumBlock} class. An \texttt{EthereumBlock} object is retrieved from an \texttt{EthBlock.Block} object of the \textit{Web3J} library, retrieved calling the \texttt{Web3J.getBlockByNumber} method. This \textit{Web3J}'s method does internally a JSON-RPC request to the \textit{getBlockByNumber} method, directly to Parity, at the previously defined url.
+\newline
+The difference between the \texttt{EthereumBlock} object and the \texttt{EthBlock.Block} object is that the first one contains also the internal transactions information, not normally returned using an implemented method in \textit{Web3J}. \newline
+In order to retrieve all information about Contract Internal Transaction, we have to do anther JSON-RPC request calling the \textit{trace\_block} method. This request allows to see all the transactions and internal transactions contained in this block. From this request, we extract only the internal transactions, filtering the normal transactions, already known.
+\newline
+Each \texttt{EthereumBlock} object contains the following information:
+\begin{itemize}
+    \item \textit{number}: block number inside blockchain;
+    \item \textit{hash}: block hash;
+    \item \textit{parentHash}: hash of the parent block;
+    \item \textit{miner}: address of the account that mined this block;
+    \item \textit{size}: size of block in bytes;
+    \item \textit{timeStamp}: the unix timestamp for when the block was collated;
+    \item \textit{transactions}: Array of transaction objects (this data structure will be described below);
+    \item \textit{internalTransactions}: Array of contract transaction objects (this data structure will be described blow).
+\end{itemize}
+
+The \textit{transaction} field is a List of \texttt{EthereumTransaction} objects. These objects are created using a factory method that takes as input a object of \texttt{EthBlock.TransactionObject} \textit{Web3J} class. 
+\newline
+Each \texttt{EthereumTransaction} object contains the following information:
+\begin{itemize}
+    \item \textit{hash}: transaction hash;
+    \item \textit{blockHash}: hash of the block that contains this transaction;
+    \item \textit{transactionIndex}: index of the transaction inside its block;
+    \item \textit{from}: transaction sender;
+    \item \textit{to}: transaction receiver;
+    \item \textit{value}: value transferred in this transaction in Wei;
+    \item \textit{gasPrice}: gas price provided by the sender in Wei;
+    \item \textit{gas}: gas provided by the sender;
+    \item \textit{input}: the data send along with the transaction;
+    \item \textit{creates}: creates contract hash. This field is not null if and only if this transaction creates a contract, which address is displayed here;
+\end{itemize}
+The \textit{internalTransactions} field is a List of \texttt{EthereumInternalTransaction} objects. These objects are created unmarshalling the result of the  \textit{trace\_block} JSON-RPC request. \newline
+Each \texttt{EthereumInternalTransaction} object contains the following information:
+\begin{itemize}
+    \item \textit{parentTxHash}: hash of the parent transaction;
+    \item \textit{txType}: transaction type (create, suicide, call);
+    \item \textit{from}: transaction sender;
+    \item \textit{to}: transaction receiver;
+    \item \textit{value}: value transferred in this transaction in Wei.
+\end{itemize}
+
+These classes envelop all the Ethereum Blockchain's useful data. In order to retrieve external data (e.g. ICO data), we have to create one new class inside the \texttt{custom} package.
+\newline
+Let's consider the section \ref{exchangerates} as an example. In order to retrieve the exchange rate information, we created a new class called \texttt{custom.PriceHistorical} with one method, called \texttt{getPrice} which takes one argument as input that is the date timestamp, and returns the ETH/USD exchange rate in that timestamp.
+
+When all the data is prepared to be gathered, you must choose what kind of database you will use. This tool supports both SQL (MySQL, PostgreSQL) and NoSQL (MongoDB) databases.
+If you want to use a \textbf{SQL} database, you have to use our \texttt{db} package, designed to be used in these cases. More precisely, you have to instantiate an object of the \texttt{Table} class, that is a table in the SQL database. 
+\newline
+Here's an exhaustive example:
+\begin{lstlisting}[language=Scala]
+    import tcs.db.sql.Table
+    import tcs.db.{DatabaseSettings, PostgreSQL}
+    val blockTable = new Table(
+      sql"""
+          SQL COMMAND TO CREATE TABLE
+         """,
+      sql"""
+           SQL COMMAND TO INSERT ELEMENT IN TABLE
+         """,
+      new DatabaseSettings(dbName, PostgreSQL)
+    )
+\end{lstlisting}
+If you want to use a \textbf{NoSQL} database, you have to use our \texttt{mongo} and \texttt{db} packages, designed to be used in these cases. More precisely, you have to instantiate an object of the \texttt{Collection} class, then call this \texttt{append} method to add elements inside the collection. 
+\newline
+Here's an example:
+\begin{lstlisting}[language=Scala]
+    import mongo.Collection
+    import db.{DatabaseSettings, MongoDB}
+    val collection = new Collection(
+        "collectionName", 
+        new DatabaseSettings("dbName", MongoDB)
+    )
+    //Data Gathering
+    collection.append(gatheredData)
+\end{lstlisting}
