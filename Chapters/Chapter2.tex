@@ -1,12 +1,12 @@
 \label{Chapter2}
 
-\chapter{Background on Ethereum}
-
+\chapter{Background}
+In this chapter we discuss on background on Ethereum and Initial Coin Offerings (ICOs).
+\section{Background on Ethereum}
 \href{https://www.ethereum.org}{\textbf{Ethereum}} is a decentralized platform that runs smart contracts: applications that run exactly as programmed without any possibility of downtime, censorship, fraud or third-party interference.
 These apps run on a custom built \textbf{blockchain}, an enormously powerful shared global infrastructure that can move value around and represent the ownership of property.
 This enables developers to create markets, store registries of debts or promises, move funds in accordance with instructions given long in the past (like a will or a futures contract) and many other things that have not been invented yet, all without a middleman or counterparty risk.
-
-\section{Ethereum accounts}
+\subsection{Ethereum accounts}
 In Ethereum, the state is made up of objects called \textbf{\textit{accounts}}, with each account having a 20-byte address and state transitions being direct transfers of value and information between accounts. An Ethereum account contains four fields:
 \begin{itemize}
     \item The \textit{nonce}, a counter used to make sure each transaction can only be processed once
@@ -16,7 +16,7 @@ In Ethereum, the state is made up of objects called \textbf{\textit{accounts}}, 
 \end{itemize}
 \textit{Ether} is the main internal crypto-fuel of Ethereum, and is used to pay transaction fees. \newline In general, there are two types of accounts: externally owned accounts, controlled by private keys, and contract accounts, controlled by their contract code.
 
-\section{Messages and Transactions}
+\subsection{Messages and Transactions}
 The term \textit{transaction} is used in Ethereum to refer to the signed data package that stores a message to be sent from an externally owned account. Transactions contain:
 \begin{itemize}
     \item The \textit{recipient} of the message
@@ -30,7 +30,7 @@ The term \textit{transaction} is used in Ethereum to refer to the signed data pa
 The first three are standard fields expected in any cryptocurrency. The data field has no function by default, but the virtual machine has an opcode using which a contract can access the data; as an example use case, if a contract is functioning as an on-blockchain domain registration service, then it may wish to interpret the data being passed to it as containing two "fields", the first field being a domain to register and the second field being the IP address to register it to. The contract would read these values from the message data and appropriately place them in storage. \newline
 The STARTGAS and GASPRICE fields are crucial for Ethereum's anti-denial of service model. In order to prevent accidental or hostile infinite loops or other computational wastage in code, each transaction is required to set a limit to how many computational steps of code execution it can use. 
 
-\section{Messages}
+\subsection{Messages}
 Contracts have the ability to send "messages" to other contracts. Messages are virtual objects that are never serialized and exist only in the Ethereum execution environment. A message contains:
 \begin{itemize}
     \item The \textit{sender} of the message (implicit)
@@ -43,7 +43,7 @@ Contracts have the ability to send "messages" to other contracts. Messages are v
 Essentially, a message is like a transaction, except it is produced by a contract and not an external actor. A message is produced when a contract currently executing code executes the CALL opcode, which produces and executes a message. \newline
 Like a transaction, a message leads to the recipient account running its code. Thus, contracts can have relationships with other contracts in exactly the same way that external actors can.
 
-\section{Ethereum State Transition Function}
+\subsection{Ethereum State Transition Function}
 A step of Ethereum State Transition Function can be displayed as follows:
 \begin{center}
     \includegraphics[scale=0.5]{ethertransition.png}
@@ -58,7 +58,7 @@ This function, \texttt{APPLY(S,TX) -> S'} can be defined as follows:
     \item Otherwise, refund the fees for all remaining gas to the sender, and send the fees paid for gas consumed to the miner.
 \end{enumerate}
 
-\section{Ethereum Smart Contracts}
+\subsection{Ethereum Smart Contracts}
 A smart contract \cite{clack2016smart} is a computer protocol intended to digitally facilitate, verify, or enforce the negotiation or performance of a contract. Smart contracts allow the performance of credible transactions without third parties. These transactions are trackable and irreversible. Smart contracts were first proposed by Nick Szabo, who coined the term, in 1994.
 
 There are, basing on applications, four types of smart conntract:
@@ -79,7 +79,7 @@ A smart contract can be deployed using three different languages:
 \end{itemize}
 
 
-\section{Applications in Token Systems}
+\subsection{Applications in Token Systems}
 On-blockchain token systems have many applications ranging from sub-currencies representing assets such as USD or gold to company stocks, individual tokens representing smart property, secure unforgeable coupons, and even token systems with no ties to conventional value at all, used as point systems for incentivization. \newline
 Token systems are surprisingly easy to implement in Ethereum. The key point to understand is that all a currency, or token system, fundamentally is a database with one operation: subtract \texttt{X} units from \texttt{A} and give \texttt{X} units to \texttt{B}, with the proviso that 
 \begin{enumerate}
@@ -97,3 +97,152 @@ def send(to, value):
 \end{lstlisting}
 
 Theoretically, Ethereum-based token systems acting as sub-currencies can potentially include another important feature that on-chain Bitcoin-based meta-currencies lack: the ability to pay transaction fees directly in that currency. The way this would be implemented is that the contract would maintain an ether balance with which it would refund ether used to pay fees to the sender, and it would refill this balance by collecting the internal currency units that it takes in fees and reselling them in a constant running auction. Users would thus need to "activate" their accounts with ether, but once the ether is there it would be reusable because the contract would refund it each time.
+
+\section{Background on ICOs}
+\label{ico}
+\subsection{Initial Coin Offering}
+An \textbf{initial coin offering} (ICO) is a controversial means of crowdfunding centered around cryptocurrency \cite{chohan2017initial,teutsch2017interactive} which can be a source of capital for startup companies. 
+
+In an ICO, a quantity of the crowdfunded cryptocurrency is preallocated to investors in the form of \textit{tokens}, in exchange for legal tender or other cryptocurrencies such as \textbf{Bitcoin} or \textbf{Ethereum}. These tokens supposedly become functional units of currency if or when the ICO's funding goal is met and the project launches.
+
+ICOs provide a means by which startups avoid costs of regulatory compliance and intermediaries, such as venture capitalists, bank and stock exchanges while increasing risk for investors. ICOs may fall outside existing regulations or may need to be regulated depending on the nature of the project, or are banned altogether in some jurisdictions, such as China and South Korea
+
+\subsection{ERC20 Tokens}
+The \href{https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md}{ERC20} token standard \cite{vogelsteller2015erc} describes the functions and events that an Ethereum token contract has to implement. \newline
+Following is an interface contract declaring the required functions and events to meet the ERC20 standard:
+\begin{lstlisting}[language=Solidity]
+contract ERC20Interface {
+    function totalSupply() public constant returns (uint);
+    function balanceOf(address tokenOwner) public constant returns (uint balance);
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
+    function transfer(address to, uint tokens) public returns (bool success);
+    function approve(address spender, uint tokens) public returns (bool success);
+    function transferFrom(address from, address to, uint tokens) public returns (bool success);
+
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed tokenOwner,address indexed spender, uint tokens);
+}
+\end{lstlisting}
+Some of the tokens include further information describing the token contract:
+\begin{lstlisting}[language=Solidity]
+    string public constant name = "Token Name";
+    string public constant symbol = "SYM";
+    uint8 public constant decimals = 18;
+\end{lstlisting}
+
+\subsection{How a Token Contract Works}
+Following is a fragment of a token contract to demonstrate how a token contract maintains the token balance of Ethereum accounts:
+\begin{lstlisting}[language=Solidity]
+contract TokenContractFragment {
+
+    // Balances for each account
+    mapping(address => uint256) balances;
+
+    // Owner of account approves the transfer of an amount to another account
+    mapping(address => mapping (address => uint256)) allowed;
+
+    // Get the token balance for account `tokenOwner`
+    function balanceOf(address tokenOwner) 
+    public constant returns (uint balance) {
+        return balances[tokenOwner];
+    }
+
+    // Transfer the balance from owner's account to another account
+    function transfer(address to, uint tokens) 
+    public returns (bool success) {
+    balances[msg.sender] = balances[msg.sender].sub(tokens);
+    balances[to] = balances[to].add(tokens);
+    Transfer(msg.sender, to, tokens);
+    return true;
+    }
+
+    // Send `tokens` amount of tokens from address `from` to address `to`
+    // The transferFrom method is used for a withdraw workflow, allowing contracts to send
+    // tokens on your behalf, for example to "deposit" to a contract address and/or to charge
+    // fees in sub-currencies; the command should fail unless the _from account has
+    // deliberately authorized the sender of the message via some mechanism; we propose
+    // these standardized APIs for approval:
+    function transferFrom(address from, address to, uint tokens) 
+    public returns (bool success) {
+        balances[from] = balances[from].sub(tokens);
+        allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
+        balances[to] = balances[to].add(tokens);
+        Transfer(from, to, tokens);
+        return true;
+    }
+
+    // Allow `spender` to withdraw from your account, multiple times, up to the `tokens` amount.
+    // If this function is called again it overwrites the current allowance with _value.
+    function approve(address spender, uint tokens) 
+    public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        Approval(msg.sender, spender, tokens);
+        return true;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Token Balance}
+For an example, assume that this token contract has two token holders: \newline
+\hspace*{4ex} \texttt{0x1111111111111111111111111111111111111111} with a balance of 100 units
+\newline
+\hspace*{4ex} \texttt{0x2222222222222222222222222222222222222222} with a balance of 200 units
+\newline
+The token contract's balances data structure will contain the following information:
+\newline
+\hspace*{4ex} \texttt{balances[0x11111...] = 100}
+\newline
+\hspace*{4ex} \texttt{balances0x22222...] = 200}
+\newline
+The \texttt{balanceOf(...)} function will return the following values:
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 100
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 200
+
+\subsubsection{Transfer token balance}
+If \texttt{0x11111...} wants to transfer 10 tokens to \texttt{0x22222...}, \texttt{0x11111...} will execute the function:
+\begin{lstlisting}[language=Solidity]
+    tokenContract.transfer(0x22222..., 10)
+\end{lstlisting}
+The token contract's \texttt{transfer(...)} function will alter the balances data structure to contain the following information:
+\newline
+\hspace*{4ex} \texttt{balances[0x11111...] = 90}
+\newline
+\hspace*{4ex} \texttt{balances[0x22222...] = 210}
+\newline
+The \texttt{balanceOf(...)} function will now return the following values:
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 90
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 210
+
+\subsubsection{Approve And TransferFrom Token Balance}
+If \texttt{0x11111...} wants to authorise \texttt{0x22222...} to transfer some tokens to \texttt{0x22222...}, \texttt{0x11111...} will execute the function:
+\begin{lstlisting}[language=Solidity]
+    tokenContract.approve(0x22222..., 30)
+\end{lstlisting}
+The approve data structure will now contain the following information:
+\newline
+\hspace*{4ex} \texttt{tokenContract.allowed[0x11111...][0x22222...] = 30}
+\newline
+If\texttt{0x22222...} wants to later transfer some tokens from \texttt{0x11111...} to itself, \texttt{0x22222...} executes the \texttt{transferFrom(...)} function:
+\begin{lstlisting}[language=Solidity]
+    tokenContract.transferFrom(0x11111..., 0x22222..., 20)
+\end{lstlisting}
+The balances data structure will be altered to contain the following information:
+\newline
+\hspace*{4ex} \texttt{balances[0x11111...] = 70}
+\newline
+\hspace*{4ex} \texttt{balances[0x22222...] = 230}
+\newline
+And the approve data structure will now contain the following information:
+\newline
+\hspace*{4ex} \texttt{tokenContract.allowed[0x11111...][0x22222...] = 10}
+\newline
+0x22222... can still spend 10 tokens from 0x11111....
+The \texttt{balanceOf(...)} function will now return the following values:
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 70
+\newline
+\hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 230

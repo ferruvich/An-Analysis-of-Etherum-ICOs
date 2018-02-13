@@ -4,7 +4,18 @@
 The last few years have witnessed a steady growth in interest on blockchains, driven by the success of Bitcoin and, more recently, of Ethereum \cite{wood2014ethereum}. This has fostered the research on several aspects of blockchain technologies, from their theoretical foundations — both cryptographic \cite{clark2015research, garay2015bitcoin} and economic \cite{luu2015power, schrijvers2016incentive} — to their
 security and privacy \cite{androulaki2013evaluating, bonneau2014mixcoin, gervais2016security, karame2015misbehavior, meiklejohn2013fistful}.
 
+This interest, in the most recent years, gave rise to a fusion of the crowdfunding concept and the cryptocurrency concept, giving rise to the concept of Initial Coin Offering, or ICO. 
+First ICOs were launched in order to collect funds to create new cryptocurrencies, but current ICOs are used for any purpose.
+Generally, tokens are selled in order to collect money, with the token and his behaviour are defined nowadays using Ethereum Smart Contracts. Ethereum itself raised money with a token sale in 2014, raising 3,700 BTC in its first 12 hours, equal to approximately 2.3 million US dollars at the time. In May 2017, the ICO for a new web browser called Brave generated about 35 million US dollars in under 30 seconds.
+
+Ethereum is (as of August 2017) the leading blockchain platform for ICOs with more than 50\% market share. These tokens are called ERC20 (as described in chapter \ref{ico}).
+
 Among the research topics emerging from blockchain technologies, one that has received major interest is the analysis of the data stored in blockchains. Indeed, the two main blockchains contain several gigabytes of data (∼130GB for Bitcoin, ∼300GB for Ethereum), that only in part are related to currency transfers. Developing analytics on these data allows us to obtain several insights, as well as economic indicators that help to predict market trends.
 
 Many works on data analytics have been recently published, addressing anonymity issues, e.g. by de-anonymising users \cite{meiklejohn2013fistful,ober2013structure,reid2013analysis}, clustering transactions \cite{vasek2015there,harrigan2016unreasonable}, or evaluating anonymising services \cite{moser2017anonymous}. Other analyses have addressed criminal activities, e.g. by studying denial-of-service attacks \cite{baqer2016stressing,vasek2014empirical}, ransomware \cite{liao2016behind}, and various financial frauds \cite{moser2013inquiry}. Many statistics on Bitcoin and Ethereum exist, measuring e.g. economic indicators \cite{lischke2016analyzing}, transaction fees \cite{moser2015trends}, the usage of metadata \cite{bartoletti2017analysis}.
 
+A common trait of these works is that they create views of the blockchain which contain all the data needed for the goals of the analysis. In many cases, this requires to combine data within the blockchain with data from the outside. These data are retrieved from a variety of sources, e.g. blockchain explorers, wikis, discussion forums, and dedicated sites. Despite such studies share several common operations, e.g., scanning all the blocks and the transactions in the blockchain, converting the value of a transaction from bitcoins to USD, etc., researchers so far tended to implement ad-hoc tools for their analyses, rather than reusing standard libraries. Further, most of the few available tools have limitations, e.g. they feature a fixed set of analytics, or they
+do not allow to combine blockchain data with external data, or they are not amenable to be updated.
+
+The main contribution of this thesis is a framework to create
+general-purpose analytics on the Ethereum blockchain and on Initial Coin Offerings.
