@@ -1,6 +1,7 @@
 \label{Chapter3}
 
 \chapter{A tool for Ethereum analytics}
+In this chapter we describe in details how our created tool works. First of all, we describe its architecture in details, highlighting every separated part, in particular we talk about \textit{Parity}, \textit{Web3J} and \textit{JSON-RPC}. Further, we discuss some case studies using our tool, retrieving data from Ethereum blockchain, and then combining it with external data. Furthermore, we discuss about tool implementation, and how it works internally.
 \section{Tool architecture}
 In this section we will describe how this tool works. This tool is build for create a custom view of either the Ethereum blockchain or the Bitcoin blockchain.
 \newline 
@@ -99,6 +100,284 @@ Notification, with no response
     "params": [1,2,3,4,5]
 }
 \end{lstlisting}
+
+\section{External Information Sources}
+\label{informationsources}
+\subsection{ICO-Rating}
+\label{icoRating}
+\subsubsection{Available Data}
+\label{icoRatingAvailableData}
+\href{https://icorating.com/}{ICO-Rating} contains a list of active ICOs. It rates them relying on they stability and risk on investment. ICORating rates an ICO using three scores:
+\begin{itemize}
+    \item \textit{\textbf{HypeScore}}: Hype-score shows investor level of interest in the project. The higher the score, the more people may consider the project for future investments. That is a numeric score between 0 and 5;
+    \item \textit{\textbf{RiskScore}}: Risk score is aimed at assessing the risk of potentially fraudulent activities. The higher the risk score, the less information there is on the details of the ICO campaign, product development, the team and the documentation, which calls into question the possibility for success of the start-up and the ICO/Token sale. That is a numeric score between 0 and 5;
+    \item \textit{\textbf{Investment Rating}}: The metrics of this parameter is divided into 10 levels: \textit{Positive+, Positive, Stable+, Stable, Risky+, Risky, Risky-, Negative, Negative-, Default}. The higher the rate assigned to the project, the better the overall quality of the project’s documentation, and the lower the number of risks for future investors.
+\end{itemize}
+\subsubsection{Extracted API Methods}
+In this subsection we describe the API internal methods that retrieve data listed in \ref{icoRatingAvailableData}. \newline 
+In the following table is written that the methods used to retrieve all the data described above take only the token name as input. \newline
+This is because ICORating does not have a REST API, or any other API to call, but we had to do a scraping on the HTML page at the address \texttt{icorating.com/ico/<token-name>/}. \newline
+
+In order to retrieve all this data, we created a class called \textbf{ICORatingAPI}, following are the methods in this class.
+\begin{center}
+\begin{tabular}{| C{2.5cm} | C{4cm} | C{5.5cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline 
+    \textbf{Hype Score} & ICORating's hype score for the given ICO & \texttt{getHypeScore(icoName)}\\ \hline 
+    \textbf{Risk Score} & ICORating's risk score for the given ICO & \texttt{ getRiskScore(icoName)}\\ \hline 
+    \textbf{Investment Rating} & ICORating's investment rating for the given ICO & \texttt{getInvestmentRating(icoName)}\\ \hline 
+\end{tabular}
+\end{center}
+
+\subsection{ICOBench}
+\label{icoBench}
+\subsubsection{Available Data}
+\href{https://icobench.com/}{ICOBench} is a free ICO rating platform and a blockchain community supported by a wide range of experts that provides analytical, legal, and technical insights to the investors.
+ICOBench also gives a rating for each Token. Rating is given in combination of:
+\begin{itemize}
+    \item Their assessment algorithm that uses more than 20 different criteria on which each ICO can earn more than 30 points and
+    \item The rating the independent experts give to the ICO following our rating methodology suggestions.
+\end{itemize} 
+
+The rating is a float value beetween 0 and 5.0 and is splitted in four subratings, which are combined (with a simple arithmetic average) to retrieve the general ICO rating:
+\begin{itemize}
+    \item ICO Profile
+    \item Team
+    \item Vision
+    \item Product
+\end{itemize}
+ICOBench gives an useful \href{https://icobench.com/developers}{REST API} to retrieve all data they have about 1787 ICO from 164 different countries. \newline
+Like ICORating in \ref{icoRating}, in order to retrieve all needed data with rest APIs, we have to use  either the token name or the token symbol. We have to do this because ICOBench does not store (or does not make available) the contract address, which we believe is more unambiguous then token name. \newline
+In the next subsection we will talk about all the data that we extracted using this API.
+\subsubsection{Extracted API Methods}
+
+In order to extract useful data using this API, we have created a specific class, called \textbf{ICOBenchAPI}, following are the methods in this class.
+\begin{center}
+\begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline 
+    \textbf{ICO Symbol} & ICO's symbol & \texttt{getSymbol(icoName)}\\ \hline 
+    \textbf{Exchange Details} & Details about the Exchanges that trade this token & \texttt{getExchanges(icoName/icoSymbol)}\\ \hline 
+    \textbf{Market Cap} & Actual Market Capitalization of the given ICO &
+    \texttt{getMarketCap(icoName/icoSymbol)}\\ \hline
+    \textbf{General Rating} & ICOBench's general rating for the given Token &
+    \texttt{getGeneralRating(icoName/icoSymbol)
+    }\\ \hline
+    \textbf{Profile Rating} & ICOBench's profile rating for the given Token &
+    \texttt{getProfileRating(icoName/icoSymbol)}\\ \hline 
+    \textbf{Team Rating} & ICOBench's team rating for the given Token &
+    \texttt{getTeamRating(icoName/icoSymbol)}\\ \hline 
+    \textbf{Vision Rating} & ICOBench's vision rating for the given Token ICO &
+    \texttt{getVisionRating(icoName/icoSymbol)}\\ \hline 
+    \textbf{Product Rating} & ICOBench's product rating for the given Token &
+    \texttt{getProductRating(icoName/icoSymbol)}\\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{TokenWhoIs}
+\subsubsection{Available Data}
+\href{https://tokenwhois.com/}{TokenWhoIs} is a website that contains a wide list of ICOs, and for eeach of them, it contains information like Market Capitalization, used blockchain, unit price in various currencies. \newline
+Like ICOBench in \ref{icoBench} in order to retrieve all needed data with rest APIs, we have to use  either the token name or the token symbol. 
+\subsubsection{Extracted API Methods}
+In order to extract useful data using this API, we have created a specific class, called \textbf{TokenWhoIsAPI}, following are the methods in this class.
+\begin{center}
+\begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline 
+    \textbf{Used Blockchain} & Blockchain used by the given token & \texttt{getUsedBlockchain(icoName)}\\ \hline 
+    \textbf{Market Cap} & Actual Market Capitalization of the given ICO &
+    \texttt{getMarketCap(icoName)}\\ \hline
+    \textbf{Token Unit Price (USD)} & Token current unit price (USD) &
+    \texttt{getUSDUnitPrice(icoName)
+    }\\ \hline
+    \textbf{Token Unit Price (ETH)} & Token current unit price (ETH) &
+    \texttt{getETHUnitPrice(icoName, icoSymbol)}\\ \hline 
+    \textbf{Token Unit Price (BTC)} & Token current unit price (BTC) &
+    \texttt{getBTCUnitPrice(icoName)}\\ \hline 
+    \textbf{Exchange Names} & Name of Exchanges that trade this token ICO &
+    \texttt{getExchangeNames(icoName)}\\ \hline 
+    \textbf{Token Supply (USD)} & Token total supply in USD &
+    \texttt{getUSDSupply(icoName,icoSymbol)}\\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{CoinMarketCap}
+\href{https://coinmarketcap.com/}{CoinMarketCap} is a website that provides market data about cryptocurrencies and ICO tokens. It provides data like actual and historical market capitalization and actual and historical cryptocurrency unit price in various currencies.
+\subsubsection{Available Data}
+CoinMarketCap provides an useful REST API, which prvides the following data for each cryptocurrency:
+\begin{itemize}
+    \item \textit{Name}: Token Name;
+    \item \textit{Symbol}: token Symbol;
+    \item \textit{Price USD}: Current currency unit price in USD;
+    \item \textit{Price BTC}: Current currency unit price in BTC;
+    \item \textit{24h volume USD}: Volume of currency transferred in the last 24 hours, in USD;
+    \item \textit{Market Cap USD}: Coin Market Capitalization in USD;
+    \item \textit{Available Supply}: Coin available supply. 'Available' means 'available to buy';
+    \item \textit{Total Supply}: Coin total supply;
+    \item \textit{Percent Change 1h}: Change of coin price in the last hour;
+    \item \textit{Percent Change 24h}: Change of coin price in the 24 hours;
+    \item \textit{percent Change 7d}: Change of coin price in the seven days;
+    \item \textit{Last Updated}: Last time these information were updated.
+\end{itemize}
+\subsubsection{Extracted API Methods}
+In order to extract useful data using this API, we have created a specific class, called \textbf{CoinMarketCapAPI}, following are the methods in this class.
+\begin{center}
+\begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline 
+    \textbf{Market Cap} & Actual Market Capitalization of the given token &
+    \texttt{getTokenMarketCap(icoName, icoSymbol)}\\ \hline
+    \textbf{Token Unit Price (USD)} & Token current unit price (USD) &
+    \texttt{getTokenUSDPrice(icoName, icoSymbol)}\\ \hline
+    \textbf{Token Unit Price (BTC)} & Token current unit price (BTC) &
+    \texttt{getTokenBTCPrice(icoName, icoSymbol)}\\ \hline 
+    \textbf{Exchange Names} & Name of Exchanges that trade this token ICO &
+    \texttt{getExchangeNames(icoName)}\\ \hline 
+    \textbf{Token Supply (USD)} & Token total supply in USD &
+    \texttt{getUSDSupply(icoName,icoSymbol)}\\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{EtherScan}
+\label{etherscan}
+\subsubsection{Available Data}
+\href{https://etherscan.io/}{EtherScan} is a Block Explorer and Analytics Platform for Ethereum.
+It provides a view of all blockchain containing:
+\begin{itemize}
+    \item Block information such as block number, hash, miner;
+    \item Accounts information;
+    \item Transaction information such as hash, receiver, sender, amount;
+    \item Internal Transaction information such as hash, receiver, sender, amount, father transaction's hash;
+    \item Tokens information such as token name, symbol, owners;
+\end{itemize}
+Etherscan also provides an useful REST API to retrieve all data they have. In the next section we'll describe all data extracted from Etherscan
+\subsubsection{Extracted API Methods}
+In order to extract useful data using this API, we have created a specific class, called \textbf{EtherScanAPI}, following are the methods in this class.
+\begin{center}
+\begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline 
+    \textbf{Token total Supply } & Token total supply &
+    \texttt{getTotalSupplyByAddress(icoAddress)}\\ \hline
+    \textbf{Token balance by adderess} & Given an account address, it returns its token balance &
+    \texttt{getTokenAccountBalance(icoAddress, accountAddress)}\\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{Ethplorer}
+\subsubsection{Available Data}
+\href{https://ethplorer.io/}{Ethplorer} is a token blobkchain explorer. For each token, it provides information such as:
+\begin{itemize}
+    \item Basic token information (Name, Symbol, Price, Total Supply);
+    \item Basic token contract information (Address, creator's address, balance (ETH), number of transactions);
+    \item Token Operations details inside a time interval (Transaction hash, sender, receiver, amount of token transferred);
+\end{itemize}
+\subsubsection{Extracted API Methods}
+In order to extract useful data using this API, we have created a specific class, called \textbf{EthplorerAPI}, following are the methods in this class.
+\begin{center}
+\begin{tabular}{| C{2cm} | C{4cm} | C{7cm} |} \hline
+    \textit{Field Name} & \textit{Description} & \textit{Method Signature}\\ \hline
+    \textbf{ICO Name} & ICO's name & \texttt{getTokenName(contractAddress)}\\ \hline 
+    \textbf{ICO Symbol} & ICO's Symbol & \texttt{getTokenSymbol(contractAddress)}\\ \hline 
+    \textbf{Token Price} & Token current price (USD) & \texttt{getTokenPrice(contractAddress)}\\ \hline
+\end{tabular}
+\end{center}
+
+\section{Implementation}
+In this section we will explain in details the implementation of the tool, built to retrieve blockchain data and other external data and combine them.
+
+This tool is written in Scala Programming Language and built with Scala Build Tool (SBT). Scala has been chosen because, since it's compiled in bytecode that runs on Java Virtual Machine (JVM), it can be combined with Java external libraries without any problem. \newline
+Thanks to this property, it was possible to use Web3J (explained in \ref{web3j}) library to retrieve blockchain data. It is a Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network.
+
+The core class, used to access both \textit{Ethereum} and \textit{Bitcoin} blockchain is \texttt{BlockchainLib}. It has two methods:
+\begin{itemize}
+    \item \texttt{getBitcoinBlockchain(settings: BitcoinSettings)}
+    \item \texttt{getEthereumBlockchain(url: String)}
+\end{itemize}
+Since for this thesis we used only \texttt{getEthereumBlockchain}, we will describe only this class. 
+\newline
+The \texttt{getEthereumBlockchain} method takes one parameter that is the url where the blockchain is stored.
+For example, if you are using Parity locally, the url should be like \texttt{http://localhost:8545}, since the \texttt{8545} port is the default port where Parity listens to JSON-RPC requests.
+
+This method returns an istance of \texttt{EthereumBlockchain} which extends a \texttt{Traversable}, so it can be looped with a simple \texttt{foreach}, setting first the following parameters:
+\begin{itemize}
+    \item \textit{startBlock}: the block from which to start. It is modifiable with the \texttt{setStart} method. If not setted, the default is 0;
+    \item \textit{endBlock}: the block from which to end. It is modifiable with the \texttt{setEnd} method. If not setted, the default is the last block;
+    \item \textit{step}: the interval between each block visited. It is modifiable with the \texttt{setStep} method. If not setted, the default is 1.
+\end{itemize}
+
+This \texttt{foreach} loops over all requested block. Each block is an instance of the \texttt{EthereumBlock} class. An \texttt{EthereumBlock} object is retrieved from an \texttt{EthBlock.Block} object of the \textit{Web3J} library, retrieved calling the \texttt{Web3J.getBlockByNumber} method. This \textit{Web3J}'s method does internally a JSON-RPC request to the \textit{getBlockByNumber} method, directly to Parity, at the previously defined url.
+\newline
+The difference between the \texttt{EthereumBlock} object and the \texttt{EthBlock.Block} object is that the first one contains also the internal transactions information, not normally returned using an implemented method in \textit{Web3J}. \newline
+In order to retrieve all information about Contract Internal Transaction, we have to do anther JSON-RPC request calling the \textit{trace\_block} method. This request allows to see all the transactions and internal transactions contained in this block. From this request, we extract only the internal transactions, filtering the normal transactions, already known.
+\newline
+Each \texttt{EthereumBlock} object contains the following information:
+\begin{itemize}
+    \item \textit{number}: block number inside blockchain;
+    \item \textit{hash}: block hash;
+    \item \textit{parentHash}: hash of the parent block;
+    \item \textit{miner}: address of the account that mined this block;
+    \item \textit{size}: size of block in bytes;
+    \item \textit{timeStamp}: the unix timestamp for when the block was collated;
+    \item \textit{transactions}: Array of transaction objects (this data structure will be described below);
+    \item \textit{internalTransactions}: Array of contract transaction objects (this data structure will be described blow).
+\end{itemize}
+
+The \textit{transaction} field is a List of \texttt{EthereumTransaction} objects. These objects are created using a factory method that takes as input a object of \texttt{EthBlock.TransactionObject} \textit{Web3J} class. 
+\newline
+Each \texttt{EthereumTransaction} object contains the following information:
+\begin{itemize}
+    \item \textit{hash}: transaction hash;
+    \item \textit{blockHash}: hash of the block that contains this transaction;
+    \item \textit{transactionIndex}: index of the transaction inside its block;
+    \item \textit{from}: transaction sender;
+    \item \textit{to}: transaction receiver;
+    \item \textit{value}: value transferred in this transaction in Wei;
+    \item \textit{gasPrice}: gas price provided by the sender in Wei;
+    \item \textit{gas}: gas provided by the sender;
+    \item \textit{input}: the data send along with the transaction;
+    \item \textit{creates}: creates contract hash. This field is not null if and only if this transaction creates a contract, which address is displayed here;
+\end{itemize}
+The \textit{internalTransactions} field is a List of \texttt{EthereumInternalTransaction} objects. These objects are created unmarshalling the result of the  \textit{trace\_block} JSON-RPC request. \newline
+Each \texttt{EthereumInternalTransaction} object contains the following information:
+\begin{itemize}
+    \item \textit{parentTxHash}: hash of the parent transaction;
+    \item \textit{txType}: transaction type (create, suicide, call);
+    \item \textit{from}: transaction sender;
+    \item \textit{to}: transaction receiver;
+    \item \textit{value}: value transferred in this transaction in Wei.
+\end{itemize}
+
+These classes envelop all the Ethereum Blockchain's useful data. In order to retrieve external data (e.g. ICO data), we have to create one new class inside the \texttt{custom} package.
+\newline
+Let's consider the section \ref{exchangerates} as an example. In order to retrieve the exchange rate information, we created a new class called \texttt{custom.PriceHistorical} with one method, called \texttt{getPrice} which takes one argument as input that is the date timestamp, and returns the ETH/USD exchange rate in that timestamp.
+
+When all the data is prepared to be gathered, you must choose what kind of database you will use. This tool supports both SQL (MySQL, PostgreSQL) and NoSQL (MongoDB) databases.
+If you want to use a \textbf{SQL} database, you have to use our \texttt{db} package, designed to be used in these cases. More precisely, you have to instantiate an object of the \texttt{Table} class, that is a table in the SQL database. 
+\newline
+Here's an exhaustive example:
+\begin{lstlisting}[language=Scala]
+    import tcs.db.sql.Table
+    import tcs.db.{DatabaseSettings, PostgreSQL}
+    val blockTable = new Table(
+      sql"""
+          SQL COMMAND TO CREATE TABLE
+         """,
+      sql"""
+           SQL COMMAND TO INSERT ELEMENT IN TABLE
+         """,
+      new DatabaseSettings(dbName, PostgreSQL)
+    )
+\end{lstlisting}
+If you want to use a \textbf{NoSQL} database, you have to use our \texttt{mongo} and \texttt{db} packages, designed to be used in these cases. More precisely, you have to instantiate an object of the \texttt{Collection} class, then call this \texttt{append} method to add elements inside the collection. 
+\newline
+Here's an example:
+\begin{lstlisting}[language=Scala]
+    import mongo.Collection
+    import db.{DatabaseSettings, MongoDB}
+    val collection = new Collection(
+        "collectionName", 
+        new DatabaseSettings("dbName", MongoDB)
+    )
+    //Data Gathering
+    collection.append(gatheredData)
+\end{lstlisting}
+
 \section{Case study: a basic view of the blockchain}
 This view contains data about all transactions (and, contract internal transactions) that has been done inside Ethereum blockchain. The fields in this view are the following:
 \begin{itemize}
@@ -261,106 +540,74 @@ $\operatorname{lev}_{a,b}(i,j) =
 $
 \end{center}
 
+\section{Case Study: Collection of ICOs data}
+In order to store blockchain data combined with the external data retrieved using functions described in section \ref{informationsources}, we chose to use SQL, for the sake of precision, we used PostgreSQL.
+In the following section we will explain in details this view, and how we used it.
+\subsection{ICO's View}
+The view is composed of four SQL tables: 
+\begin{outline}
+    \1 \textit{Block}: contains all information about blocks retrieved directly from blockchain. In particularly, it contains the following columns:
+        \2 \textit{Hash}: the block hash inside blockchain, which is an unambiguous 32-Byte value and is used as table primary key;
+        \2 \textit{Number}: represents the block's order inside blockchain;
+        \2 \textit{Parent Hash}: contains the hash of the previous block, considered as its father inside blockchain;
+        \2 \textit{Timestamp}: the date and time when this block is mined;
+        \2 \textit{Miner}: the account that has mined this block;
+    \1 \textit{Transaction}: contains all information about transaction contained inside every block, retrieved directly from blockchain. In particularly, it contains the following columns:
+        \2 \textit{Hash}: the transaction hash inside blockchain, which is unambiguous like block ones and is used as table primary key;
+        \2 \textit{nonce}: the number of transactions made by the sender prior to this one;
+        \2 \textit{transaction index}: the number of this transaction inside its block;
+        \2 \textit{from}: the transaction sender's address;
+        \2 \textit{to}: the transaction receiver's address;
+        \2 \textit{value}: value transferred in this transaction, in Wei;
+        \2 \textit{creates}: this field is filled i and only if this transaction creates a contract. It contains the address of the newly created contract;
+        \2 \textit{gas}: gas provided by the sender;
+        \2 \textit{gasprice}: gas price provided by the sender in Wei;
+        \2 \textit{blockhash}: the hash of the block that contains this transaction, it is used as the foreign key for the \textit{Block} table.
+    \1 \textit{Internal-Transaction}
+        \2 \textit{Id}: this field is used as primary key in this table;
+        \2 \textit{Parent Tx Hash}: the hash of the father transaction. that is the transaction that generates this internal transaction;
+        \2 \textit{Transaction type}: the internal transaction type (a value between call, suicide, create);
+        \2 \textit{From}: the internal transaction sender's address;
+        \2 \textit{To}: the internal transaction receiver's address;
+        \2 \textit{Value}: alue transferred in this transaction, in Wei;
+    \1 \textit{ICO}
+        \2 \textit{Id}: this field is used as primary key in this table;
+        \2 \textit{Token Name}: The token name;
+        \2 \textit{Token Symbol}: The token Symbol;
+        \2 \textit{Contract Address}: the address of the ERC20-contract that has created this token;
+        \2 \textit{Market Cap}: The token market capitalization;
+        \2 \textit{Total Supply}: The token total supply;
+        \2 \textit{Price USD}: The current token price (USD);
+        \2 \textit{Price BTC}: The current token price (BTC);
+        \2 \textit{Hype Score}: The token hype score, given by ICORating;
+        \2 \textit{Risk Score}: The token risk score, given by ICORating;
+        \2 \textit{Investment Rating}: The token investment rating, given by ICORating;
+        \2 \textit{Tx Creator Hash}: The address of the transaction that has created the ERC20-contract, which address is in the \textit{Contract Address} field.
+\end{outline}
 
-\section{Implementation}
-In this section we will explain in details the implementation of the tool, built to retrieve blockchain data and other external data and combine them.
-
-This tool is written in Scala Programming Language and built with Scala Build Tool (SBT). Scala has been chosen because, since it's compiled in bytecode that runs on Java Virtual Machine (JVM), it can be combined with Java external libraries without any problem. \newline
-Thanks to this property, it was possible to use Web3J (explained in \ref{web3j}) library to retrieve blockchain data. It is a Java and Android library for working with Smart Contracts and integrating with clients (nodes) on the Ethereum network.
-
-The core class, used to access both \textit{Ethereum} and \textit{Bitcoin} blockchain is \texttt{BlockchainLib}. It has two methods:
+\section{Examples of tool usage on ICOs}
+In this view we stored all data contained beetween block 3000000 and block 4100000, these are the block mined in the first seven month of 2017.
+We collect data about:
 \begin{itemize}
-    \item \texttt{getBitcoinBlockchain(settings: BitcoinSettings)}
-    \item \texttt{getEthereumBlockchain(url: String)}
+    \item 1.100.000. Blocks;
+    \item About 22.000.000 Transactions;
+    \item 4.000.000 Internal transactions;
+    \item 1.500 ICOs
 \end{itemize}
-Since for this thesis we used only \texttt{getEthereumBlockchain}, we will describe only this class. 
+In this section, we discuss some studies done with all this data, stored in a SQL database.
+\subsection{MarketCap and Volume with Exchange Rates}
+With all information retrieved on \textit{CoinMarketCap} and \textit{CryptoCompare}, we can extract the historical exchange rate of all tokens, and combine them with transaction data in order to retrieve Market Capitalization and Volume of each token.
 \newline
-The \texttt{getEthereumBlockchain} method takes one parameter that is the url where the blockchain is stored.
-For example, if you are using Parity locally, the url should be like \texttt{http://localhost:8545}, since the \texttt{8545} port is the default port where Parity listens to JSON-RPC requests.
+In this example, we examinate the historical Volume and Historical Market Capitalization of one ICO: 0x (ZRX).
+\newline
+Insert here query to retrieve transaction data about 0x.
 
-This method returns an istance of \texttt{EthereumBlockchain} which extends a \texttt{Traversable}, so it can be looped with a simple \texttt{foreach}, setting first the following parameters:
-\begin{itemize}
-    \item \textit{startBlock}: the block from which to start. It is modifiable with the \texttt{setStart} method. If not setted, the default is 0;
-    \item \textit{endBlock}: the block from which to end. It is modifiable with the \texttt{setEnd} method. If not setted, the default is the last block;
-    \item \textit{step}: the interval between each block visited. It is modifiable with the \texttt{setStep} method. If not setted, the default is 1.
-\end{itemize}
+\section{Performance}
 
-This \texttt{foreach} loops over all requested block. Each block is an instance of the \texttt{EthereumBlock} class. An \texttt{EthereumBlock} object is retrieved from an \texttt{EthBlock.Block} object of the \textit{Web3J} library, retrieved calling the \texttt{Web3J.getBlockByNumber} method. This \textit{Web3J}'s method does internally a JSON-RPC request to the \textit{getBlockByNumber} method, directly to Parity, at the previously defined url.
-\newline
-The difference between the \texttt{EthereumBlock} object and the \texttt{EthBlock.Block} object is that the first one contains also the internal transactions information, not normally returned using an implemented method in \textit{Web3J}. \newline
-In order to retrieve all information about Contract Internal Transaction, we have to do anther JSON-RPC request calling the \textit{trace\_block} method. This request allows to see all the transactions and internal transactions contained in this block. From this request, we extract only the internal transactions, filtering the normal transactions, already known.
-\newline
-Each \texttt{EthereumBlock} object contains the following information:
-\begin{itemize}
-    \item \textit{number}: block number inside blockchain;
-    \item \textit{hash}: block hash;
-    \item \textit{parentHash}: hash of the parent block;
-    \item \textit{miner}: address of the account that mined this block;
-    \item \textit{size}: size of block in bytes;
-    \item \textit{timeStamp}: the unix timestamp for when the block was collated;
-    \item \textit{transactions}: Array of transaction objects (this data structure will be described below);
-    \item \textit{internalTransactions}: Array of contract transaction objects (this data structure will be described blow).
-\end{itemize}
+\section{Conclusions and future works}
+We have presented a framework for developing general-purpose analytics on the Ethereum blockchain and his ICOs. Its main component is a Scala library which can be used to construct views of the blockchain, possibly integrating blockchain data with data retrieved from external sources. Blockchain views can be stored as SQL or NoSQL databases, and can be analysed by using their query languages. Our experiments confirmed the effectiveness and generality of our approach, which uniformly comprises in a single framework several use cases addressed by various ad-hoc approaches in literature. Indeed, the expressiveness of our framework overcomes that of the closer proposals in the built-in support for external data, and the support of different kinds of databases and blockchains.
+Importantly, coming in the form of an open source library for a mainstream language, our framework is amenable of being validated and extended by a community effort, following reuse best practices.
 
-The \textit{transaction} field is a List of \texttt{EthereumTransaction} objects. These objects are created using a factory method that takes as input a object of \texttt{EthBlock.TransactionObject} \textit{Web3J} class. 
-\newline
-Each \texttt{EthereumTransaction} object contains the following information:
-\begin{itemize}
-    \item \textit{hash}: transaction hash;
-    \item \textit{blockHash}: hash of the block that contains this transaction;
-    \item \textit{transactionIndex}: index of the transaction inside its block;
-    \item \textit{from}: transaction sender;
-    \item \textit{to}: transaction receiver;
-    \item \textit{value}: value transferred in this transaction in Wei;
-    \item \textit{gasPrice}: gas price provided by the sender in Wei;
-    \item \textit{gas}: gas provided by the sender;
-    \item \textit{input}: the data send along with the transaction;
-    \item \textit{creates}: creates contract hash. This field is not null if and only if this transaction creates a contract, which address is displayed here;
-\end{itemize}
-The \textit{internalTransactions} field is a List of \texttt{EthereumInternalTransaction} objects. These objects are created unmarshalling the result of the  \textit{trace\_block} JSON-RPC request. \newline
-Each \texttt{EthereumInternalTransaction} object contains the following information:
-\begin{itemize}
-    \item \textit{parentTxHash}: hash of the parent transaction;
-    \item \textit{txType}: transaction type (create, suicide, call);
-    \item \textit{from}: transaction sender;
-    \item \textit{to}: transaction receiver;
-    \item \textit{value}: value transferred in this transaction in Wei.
-\end{itemize}
+On the comparison of SQL vs NoSQL, our experiments did not highlight significant differences in the complexity of writing and executing queries in the two languages. Instead, we observed that the schema-less nature of NoSQL databases simplifies the Scala scripts.
 
-These classes envelop all the Ethereum Blockchain's useful data. In order to retrieve external data (e.g. ICO data), we have to create one new class inside the \texttt{custom} package.
-\newline
-Let's consider the section \ref{exchangerates} as an example. In order to retrieve the exchange rate information, we created a new class called \texttt{custom.PriceHistorical} with one method, called \texttt{getPrice} which takes one argument as input that is the date timestamp, and returns the ETH/USD exchange rate in that timestamp.
-
-When all the data is prepared to be gathered, you must choose what kind of database you will use. This tool supports both SQL (MySQL, PostgreSQL) and NoSQL (MongoDB) databases.
-If you want to use a \textbf{SQL} database, you have to use our \texttt{db} package, designed to be used in these cases. More precisely, you have to instantiate an object of the \texttt{Table} class, that is a table in the SQL database. 
-\newline
-Here's an exhaustive example:
-\begin{lstlisting}[language=Scala]
-    import tcs.db.sql.Table
-    import tcs.db.{DatabaseSettings, PostgreSQL}
-    val blockTable = new Table(
-      sql"""
-          SQL COMMAND TO CREATE TABLE
-         """,
-      sql"""
-           SQL COMMAND TO INSERT ELEMENT IN TABLE
-         """,
-      new DatabaseSettings(dbName, PostgreSQL)
-    )
-\end{lstlisting}
-If you want to use a \textbf{NoSQL} database, you have to use our \texttt{mongo} and \texttt{db} packages, designed to be used in these cases. More precisely, you have to instantiate an object of the \texttt{Collection} class, then call this \texttt{append} method to add elements inside the collection. 
-\newline
-Here's an example:
-\begin{lstlisting}[language=Scala]
-    import mongo.Collection
-    import db.{DatabaseSettings, MongoDB}
-    val collection = new Collection(
-        "collectionName", 
-        new DatabaseSettings("dbName", MongoDB)
-    )
-    //Data Gathering
-    collection.append(gatheredData)
-\end{lstlisting}
-
-\section{Related works}
-This work is based on a previous work. We first developed a tool for Ethereum blockchain analytics, improving an existing tool \cite{bartoletti2017generalbit,bartoletti2017generalblock}, which is intended to analyse Bitcoin blockchain.
+A more accurate analysis, carried over a larger benchmark, is scope for future work. Anyway, it is worth recalling that the goal of our proposal is provide to the final user the flexibility to choose the preferred database, rather than ascertain an idea of best-fit-for-all in the choice.

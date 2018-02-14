@@ -1,7 +1,7 @@
 \label{Chapter2}
 
 \chapter{Background}
-In this chapter we discuss on background on Ethereum and Initial Coin Offerings (ICOs).
+In order to full understand the topic of this thesis, in this chapter we discuss on background on Ethereum, highlighting the concept of: \textit{Account}; \textit{Message}; \textit{Transaction}; \textit{State Transiction Function} and \textit{Smart Contract}. Furthermore, we discuss on background on Initial Coin Offerings, and how they work.
 \section{Background on Ethereum}
 \href{https://www.ethereum.org}{\textbf{Ethereum}} is a decentralized platform that runs smart contracts: applications that run exactly as programmed without any possibility of downtime, censorship, fraud or third-party interference.
 These apps run on a custom built \textbf{blockchain}, an enormously powerful shared global infrastructure that can move value around and represent the ownership of property.
@@ -246,3 +246,11 @@ The \texttt{balanceOf(...)} function will now return the following values:
 \hspace*{4ex} \texttt{tokenContract.balanceOf(0x11111...)} will return 70
 \newline
 \hspace*{4ex} \texttt{tokenContract.balanceOf(0x22222...)} will return 230
+
+\section{Related works}
+This work is based on a previous work. We first developed a tool for Ethereum blockchain analytics, improving an existing tool, which is intended to analyse Bitcoin blockchain  \cite{bartoletti2017generalbit}. It extrapolates Bitcoin blockchain data, such as block and transactions, and combine them with external data, such as exchange rates or addresses tags. With this data, it constructs a view using either a SQL (MySQL) or a NoSQL (MongoDB) DBMS.
+
+\href{https://etherscan.io/}{EtherScan} offers a REST api to retrieve blockchain, doing what we have done with Web3J. They achieve this with a GETH/Parity proxy from the REST api to a direct JSON-RPC request sent to either a GETH or a Parity client installed in their servers.
+But it is not as complete as our tool, because it does not offer a way to combine Ethereum blockchain data with external data.
+\newline
+As we will see in section \ref{etherscan}, Etherscan offers a way to retrieve also external date through REST API, and we use this API to retrieve external data useful to combine it with blockchain in ICOs analysis.
